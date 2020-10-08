@@ -41,7 +41,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/token")
-public class TokenEndpoint {
+public class CloudTokenEndpoint {
 
     private final ClientDetailsService clientDetailsService;
 
