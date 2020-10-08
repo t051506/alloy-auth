@@ -1,8 +1,11 @@
 package com.alloy.cloud.auth.endpoint;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.PageResult;
 import com.alloy.cloud.common.core.base.R;
 import com.alloy.cloud.common.core.constant.CacheConstants;
+import com.alloy.cloud.common.core.constant.CommonConstants;
 import com.alloy.cloud.common.security.annotation.Inner;
 import com.alloy.cloud.common.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +15,9 @@ import org.springframework.data.redis.core.ConvertingCursor;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
@@ -132,22 +137,22 @@ public class TokenEndpoint {
      * @param params 分页参数
      * @return
      */
-//	@Inner
-//	@PostMapping("/page")
-//	public R<Page> tokenList(@RequestBody Map<String, Object> params) {
-//		// 根据分页参数获取对应数据
-//		String key = String.format("%sauth_to_access:*", CacheConstants.PROJECT_OAUTH_ACCESS);
-//		List<String> pages = findKeysForPage(key, MapUtil.getInt(params, CommonConstants.CURRENT),
-//				MapUtil.getInt(params, CommonConstants.SIZE));
-//
-//		redisTemplate.setKeySerializer(new StringRedisSerializer());
-//		redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
-//		Page result = new Page(MapUtil.getInt(params, CommonConstants.CURRENT),
-//				MapUtil.getInt(params, CommonConstants.SIZE));
-//		result.setRecords(redisTemplate.opsForValue().multiGet(pages));
-//		result.setTotal(redisTemplate.keys(key).size());
-//		return R.ok(result);
-//	}
+	@Inner
+	@PostMapping("/page")
+	public R<PageResult> tokenList(@RequestBody Map<String, Object> params) {
+		// 根据分页参数获取对应数据
+		String key = String.format("%sauth_to_access:*", CacheConstants.PROJECT_OAUTH_ACCESS);
+		List<String> pages = findKeysForPage(key, MapUtil.getInt(params, CommonConstants.CURRENT),
+				MapUtil.getInt(params, CommonConstants.SIZE));
+
+		redisTemplate.setKeySerializer(new StringRedisSerializer());
+		redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
+        PageResult result = new PageResult(MapUtil.getInt(params, CommonConstants.CURRENT),
+				MapUtil.getInt(params, CommonConstants.SIZE));
+        result.add(redisTemplate.opsForValue().multiGet(pages));
+		result.setTotal(redisTemplate.keys(key).size());
+		return R.ok(result);
+	}
     private List<String> findKeysForPage(String patternKey, int pageNum, int pageSize) {
         ScanOptions options = ScanOptions.scanOptions().count(1000L).match(patternKey).build();
         RedisSerializer<String> redisSerializer = (RedisSerializer<String>) redisTemplate.getKeySerializer();
