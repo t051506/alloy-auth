@@ -75,7 +75,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	@Bean
 	public TokenEnhancer tokenEnhancer() {
 		return (accessToken, authentication) -> {
-			final Map<String, Object> additionalInfo = new HashMap<>(4);
+			final Map<String, Object> additionalInfo = new HashMap<>(3);
 			CloudUser cloudUser = (CloudUser) authentication.getUserAuthentication().getPrincipal();
 			additionalInfo.put(SecurityConstants.DETAILS_LICENSE, SecurityConstants.PROJECT_LICENSE);
 			additionalInfo.put(SecurityConstants.DETAILS_ORG_CODE, cloudUser.getOrgCode());
