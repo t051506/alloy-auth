@@ -17,6 +17,9 @@ spring:
       username: nacos
       password: nacos
 
+    sentinel:
+      transport:
+        dashboard: 127.0.0.1:8080
   redis:
     host: 120.79.94.56
     port: 6379
