@@ -1,6 +1,6 @@
 package com.alloy.cloud.auth.config;
 
-import com.alloy.cloud.common.security.handler.FormAuthenticationFailureHandler;
+import com.alloy.cloud.auth.handler.FormAuthenticationFailureHandler;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

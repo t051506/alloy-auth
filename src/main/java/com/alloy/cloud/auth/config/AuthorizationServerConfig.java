@@ -1,11 +1,11 @@
 
 package com.alloy.cloud.auth.config;
 
+import com.alloy.cloud.auth.service.ClientDetailsService;
 import com.alloy.cloud.common.core.constant.CacheConstants;
 import com.alloy.cloud.common.core.constant.SecurityConstants;
 import com.alloy.cloud.common.security.component.CloudWebResponseExceptionTranslator;
-import com.alloy.cloud.common.security.service.ClientDetailsService;
-import com.alloy.cloud.common.security.service.CloudUser;
+import com.alloy.cloud.common.security.userdetails.CloudUser;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
@@ -34,55 +34,55 @@ import java.util.Map;
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
-	private final DataSource dataSource;
+    private final DataSource dataSource;
 
-	private final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-	private final AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-	private final RedisConnectionFactory redisConnectionFactory;
+    private final RedisConnectionFactory redisConnectionFactory;
 
-	@Override
-	@SneakyThrows
-	public void configure(ClientDetailsServiceConfigurer clients) {
-		ClientDetailsService clientDetailsService = new ClientDetailsService(dataSource);
-		clientDetailsService.setSelectClientDetailsSql(SecurityConstants.DEFAULT_SELECT_STATEMENT);
-		clientDetailsService.setFindClientDetailsSql(SecurityConstants.DEFAULT_FIND_STATEMENT);
-		clients.withClientDetails(clientDetailsService);
-	}
+    @Override
+    @SneakyThrows
+    public void configure(ClientDetailsServiceConfigurer clients) {
+        ClientDetailsService clientDetailsService = new ClientDetailsService(dataSource);
+        clientDetailsService.setSelectClientDetailsSql(SecurityConstants.DEFAULT_SELECT_STATEMENT);
+        clientDetailsService.setFindClientDetailsSql(SecurityConstants.DEFAULT_FIND_STATEMENT);
+        clients.withClientDetails(clientDetailsService);
+    }
 
-	@Override
-	public void configure(AuthorizationServerSecurityConfigurer oauthServer) {
-		oauthServer.allowFormAuthenticationForClients().checkTokenAccess("permitAll()");
-	}
+    @Override
+    public void configure(AuthorizationServerSecurityConfigurer oauthServer) {
+        oauthServer.allowFormAuthenticationForClients().checkTokenAccess("permitAll()");
+    }
 
-	@Override
-	public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
-		endpoints.allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST).tokenStore(tokenStore())
-				.tokenEnhancer(tokenEnhancer()).userDetailsService(userDetailsService)
-				.authenticationManager(authenticationManager).reuseRefreshTokens(false)
-				.pathMapping("/oauth/confirm_access", "/token/confirm_access")
-				.exceptionTranslator(new CloudWebResponseExceptionTranslator());
-	}
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+        endpoints.allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST).tokenStore(tokenStore())
+                .tokenEnhancer(tokenEnhancer()).userDetailsService(userDetailsService)
+                .authenticationManager(authenticationManager).reuseRefreshTokens(false)
+                .pathMapping("/oauth/confirm_access", "/token/confirm_access")
+                .exceptionTranslator(new CloudWebResponseExceptionTranslator());
+    }
 
-	@Bean
-	public TokenStore tokenStore() {
-		RedisTokenStore tokenStore = new RedisTokenStore(redisConnectionFactory);
-		tokenStore.setPrefix(CacheConstants.PROJECT_OAUTH_ACCESS);
-		return tokenStore;
-	}
+    @Bean
+    public TokenStore tokenStore() {
+        RedisTokenStore tokenStore = new RedisTokenStore(redisConnectionFactory);
+        tokenStore.setPrefix(CacheConstants.PROJECT_OAUTH_ACCESS);
+        return tokenStore;
+    }
 
-	@Bean
-	public TokenEnhancer tokenEnhancer() {
-		return (accessToken, authentication) -> {
-			final Map<String, Object> additionalInfo = new HashMap<>(3);
-			CloudUser cloudUser = (CloudUser) authentication.getUserAuthentication().getPrincipal();
-			additionalInfo.put(SecurityConstants.DETAILS_LICENSE, SecurityConstants.PROJECT_LICENSE);
-			additionalInfo.put(SecurityConstants.DETAILS_ORG_CODE, cloudUser.getOrgCode());
-			additionalInfo.put(SecurityConstants.DETAILS_USERNAME, cloudUser.getUsername());
-			((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
-			return accessToken;
-		};
-	}
+    @Bean
+    public TokenEnhancer tokenEnhancer() {
+        return (accessToken, authentication) -> {
+            final Map<String, Object> additionalInfo = new HashMap<>(3);
+            CloudUser cloudUser = (CloudUser) authentication.getUserAuthentication().getPrincipal();
+            additionalInfo.put(SecurityConstants.DETAILS_LICENSE, SecurityConstants.PROJECT_LICENSE);
+            additionalInfo.put(SecurityConstants.DETAILS_ORG_CODE, cloudUser.getOrgCode());
+            additionalInfo.put(SecurityConstants.DETAILS_USERNAME, cloudUser.getUsername());
+            ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
+            return accessToken;
+        };
+    }
 
 }

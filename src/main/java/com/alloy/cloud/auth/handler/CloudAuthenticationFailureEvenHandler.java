@@ -1,6 +1,5 @@
 package com.alloy.cloud.auth.handler;
 
-import com.alloy.cloud.common.security.handler.AbstractAuthenticationFailureEvenHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;

@@ -63,4 +63,3 @@ feign:
       enabled: true
     response:
       enabled: true
-
