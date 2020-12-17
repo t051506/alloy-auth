@@ -55,8 +55,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final RemoteUserService remoteUserService;
 
-//    private final RedisTemplate redisTemplate;
-
     private final CacheManager cacheManager;
 
     /**
@@ -68,17 +66,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @SneakyThrows
     public UserDetails loadUserByUsername(String username) {
-//        Object cache = redisTemplate.opsForValue().get(CacheConstants.USER_DETAILS + username);
-//
-//        if (cache != null) {
-//            return (CloudUser) cache;
-//        }
-//        R<RemoteUser> result = remoteUserService.loadByUsername(SecurityConstants.FROM_IN, username);
-//        UserDetails userDetails = getUserDetails(result);
-//        redisTemplate.opsForValue().set(CacheConstants.USER_DETAILS + username,userDetails);
-//        return userDetails;
-
-
         Cache cache = cacheManager.getCache(CacheConstants.USER_DETAILS);
         if (cache != null && cache.get(username) != null) {
             return (CloudUser) cache.get(username).get();
